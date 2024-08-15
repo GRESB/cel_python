@@ -15,23 +15,18 @@ cel-in-py
 
 
 
+Parser and evaluator for CEL in Python using ANTLR4
+This library provides parser and evaluator for Common Expression Language (CEL) expressions in Python projects. CEL is a language developed by Google that allows for safe and fast evaluation of expressions in a wide variety of applications, such as policy engines, rule engines, and more.
 
-Parser and evaluator for CEL in Python using Antlr
 
-
-* Free software: GNU General Public License v3
 * Documentation: https://cel-in-py.readthedocs.io.
 
 
 Features
 --------
 
-* TODO
-
-Credits
--------
-
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+- Parse and evaluate CEL expressions directly within TypeScript projects.
+- Support for common arithmetic operations, logical operations, and comparisons.
+- Extensible design for adding custom functions and variables.
+- Error handling during parsing with custom error listeners.
+- Context-based evaluation to support dynamic expression evaluation.
