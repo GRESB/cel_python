@@ -6,7 +6,7 @@ from .visitor_interp import VisitorInterp
 from .parser.CELLexer import CELLexer
 from .parser.CELParser import CELParser
 from .parser.CELVisitor import CELVisitor
-from .parser.CELParserListener import CELParserListener
+from .parser.CELListener import CELListener
 
 __all__ = [
     "Runtime",

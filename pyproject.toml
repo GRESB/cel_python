@@ -41,8 +41,10 @@ package-dir = {"" = "src"}
 [tool.setuptools.package-data]
 "*" = ["*.*"]
 
-
-
+packages = [
+    "cel_in_py",
+    "cel_in_py.parser"
+]
 
 # Mypy
 # ----
@@ -61,3 +63,7 @@ module = "tests.*"
 allow_untyped_defs = true
 disable_error_code = "attr-defined"
 
+[tool.pytest.ini_options]
+pythonpath = [
+  ".", "src",
+]

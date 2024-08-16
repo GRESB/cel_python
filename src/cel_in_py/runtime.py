@@ -1,9 +1,9 @@
 import sys
 from antlr4 import *
-from CELLexer import CELLexer
-from CELParser import CELParser
-from VisitorInterp import VisitorInterp
-from CELParserListener import CELParserListener
+from .parser.CELLexer import CELLexer
+from .parser.CELParser import CELParser
+from .parser.CELListener import CELListener
+from .visitor_interp import VisitorInterp
 
 class Runtime:
     def __init__(self, cel_expression):
@@ -13,7 +13,7 @@ class Runtime:
         parser = CELParser(token_stream)
 
         parser.removeErrorListeners()
-        error_listener = CELParserListener()
+        error_listener = CELListener()
         parser.addErrorListener(error_listener)
 
         try:

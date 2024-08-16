@@ -33,6 +33,7 @@
               nativeBuildInputs = [
                 antlr4
                 py
+                pkgs.tree
               ];
 
               shellHook = ''

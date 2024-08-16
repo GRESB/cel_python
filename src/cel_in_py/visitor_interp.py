@@ -1,6 +1,6 @@
 from antlr4 import *
-from CELParser import CELParser
-from CELVisitor import CELVisitor
+from .parser.CELParser import CELParser
+from .parser.CELVisitor import CELVisitor
 
 class VisitorInterp(CELVisitor):
     def __init__(self, context):
@@ -48,16 +48,19 @@ class VisitorInterp(CELVisitor):
     def visitStart(self, ctx:CELParser.StartContext):
         return self.visit(ctx.expr())
 
-    def visitExpr(self, ctx:CELParser.ExprContext):
-        if ctx.QUESTIONMARK():
+    def visitExpr(self, ctx: CELParser.ExprContext):
+        if ctx.QUESTIONMARK():  # Ternary operator
             condition = self.visit(ctx.conditionalOr(0))
             true_branch = self.visit(ctx.conditionalOr(1))
             false_branch = self.visit(ctx.expr())
             return true_branch if condition else false_branch
-        elif ctx.LPAREN():
-            return self.visit(ctx.expr(0))
+        elif ctx.getChildCount() == 3 and ctx.getChild(0).getText() == "(":  # Parentheses handling
+            inner_result = self.visit(ctx.getChild(1))  # The expression inside parentheses is the second child
+            print(f"Parentheses Expression Result: {inner_result}")  # Debugging
+            return inner_result  # Return the evaluated result of the inner expression
         else:
             return self.visit(ctx.conditionalOr(0))
+
 
     def visitConditionalOr(self, ctx:CELParser.ConditionalOrContext):
         result = self.visit(ctx.conditionalAnd(0))
@@ -74,32 +77,68 @@ class VisitorInterp(CELVisitor):
     def visitRelationOp(self, ctx:CELParser.RelationOpContext):
         left = self.visit(ctx.relation(0))
         right = self.visit(ctx.relation(1))
-        operator = ctx._op.text
+        operator = ctx.op.text
 
-        if operator == "==":
-            return left == right
-        elif operator == "!=":
-            return left != right
-        elif operator == "<":
-            return left < right
-        elif operator == "<=":
-            return left <= right
-        elif operator == ">":
-            return left > right
-        elif operator == ">=":
-            return left >= right
+        if operator in ["==", "!=", "<", "<=", ">", ">="]:
+            if operator == "==":
+                return left == right
+            elif operator == "!=":
+                return left != right
+            elif operator == "<":
+                return left < right
+            elif operator == "<=":
+                return left <= right
+            elif operator == ">":
+                return left > right
+            elif operator == ">=":
+                return left >= right
         elif operator == "in":
             if isinstance(right, list):
                 return left in right
             else:
                 raise Exception(f"Invalid operation: 'in' applied to non-list.")
         else:
-            raise Exception(f"Unknown operator: {operator}")
+            # Handle arithmetic operations here if necessary, or leave it to CalcAddSub
+            return self.visit(ctx.calc())
 
-    def visitCalcMulDiv(self, ctx:CELParser.CalcMulDivContext):
-        left = self.visit(ctx.calc(0))
-        right = self.visit(ctx.calc(1))
-        operator = ctx._op.text
+    def visitRelationCalc(self, ctx: CELParser.RelationCalcContext):
+        left = self.visit(ctx.getChild(0))  # Visit the first operand
+        print(f"Initial left operand: {left}")  # Debug statement
+
+        for i in range(1, ctx.getChildCount(), 2):
+            operator = ctx.getChild(i).getText()  # Get the operator between terms
+            right = self.visit(ctx.getChild(i + 1))  # Visit the second operand
+            print(f"Operator: {operator}, Right operand: {right}")  # Debug statement
+
+            if operator == "+":
+                left += right
+            elif operator == "-":
+                left -= right
+            elif operator == "*":
+                left *= right
+            elif operator == "/":
+                left /= right
+            elif operator == "%":
+                left %= right
+            else:
+                raise Exception(f"Unknown operator: {operator}")
+            print(f"Updated left operand: {left}")  # Debug statement
+
+        return left
+
+
+
+    def visitCalcMulDiv(self, ctx: CELParser.CalcMulDivContext):
+        left = self.visit(ctx.getChild(0))
+        print(f"Initial left operand: {left}")  # Debugging
+        print(f"Initial left operanddd: {ctx.getChild(0).__class__.__name__}")  # Debugging
+        operator = ctx.getChild(1).getText()
+        right = self.visit(ctx.getChild(2))
+
+        print(f"CalcMulDiv - Left: {left}, Operator: {operator}, Right: {right}")  # Debugging
+
+        if left is None or right is None:
+            raise ValueError(f"Operand is None. Left: {left}, Right: {right}, Operator: {operator}")
 
         if operator == "*":
             return left * right
@@ -110,11 +149,14 @@ class VisitorInterp(CELVisitor):
         else:
             raise Exception(f"Unknown operator: {operator}")
 
-    def visitCalcAddSub(self, ctx:CELParser.CalcAddSubContext):
-        result = self.visit(ctx.calc(0))
-        for i in range(1, len(ctx.calc())):
-            right = self.visit(ctx.calc(i))
-            operator = ctx._op[i - 1].text
+    def visitCalcAddSub(self, ctx: CELParser.CalcAddSubContext):
+        print(f"+++++++: {ctx.__class__.__name__}")  # Debug statement
+        result = self.visit(ctx.getChild(0))  # Get the first operand
+        print(f"Initial result: {result}")  # Debug statement
+        for i in range(1, ctx.getChildCount(), 2):
+            operator = ctx.getChild(i).getText()  # Get the operator between terms
+            right = self.visit(ctx.getChild(i + 1))  # Get the second operand
+            print(f"Operator: {operator}, Right operand: {right}")  # Debug statement
 
             if operator == "+":
                 result += right
@@ -122,7 +164,9 @@ class VisitorInterp(CELVisitor):
                 result -= right
             else:
                 raise Exception(f"Unknown operator: {operator}")
+            print(f"Updated result: {result}")  # Debug statement
         return result
+
 
     def visitLogicalNot(self, ctx:CELParser.LogicalNotContext):
         result = self.visit(ctx.member())
@@ -220,7 +264,7 @@ class VisitorInterp(CELVisitor):
 
     def visitInt(self, ctx:CELParser.IntContext):
         sign = -1 if ctx.MINUS() else 1
-        return sign * int(ctx.NUM_INT().text)
+        return sign * int(ctx.NUM_INT().getText())
 
     def visitUint(self, ctx:CELParser.UintContext):
         return int(ctx.NUM_UINT().text)
@@ -243,3 +287,7 @@ class VisitorInterp(CELVisitor):
 
     def visitNull(self, ctx:CELParser.NullContext):
         return None
+
+    def visit(self, tree):
+        print(f"Visiting: {tree.__class__.__name__}")
+        return super().visit(tree)
