@@ -1,17 +1,23 @@
 from antlr4 import *
 from .parser.CELParser import CELParser
 from .parser.CELVisitor import CELVisitor
+from datetime import datetime
+from datetime import timezone
+
 
 class VisitorInterp(CELVisitor):
     def __init__(self, context):
         self.context = context
         self.function_registry = {
+            # Arithmetic Functions
             "min": min,
             "max": max,
             "abs": abs,
             "ceil": lambda x: int(x) + (1 if x > int(x) else 0),
             "floor": lambda x: int(x),
             "round": round,
+
+            # String Functions
             "contains": lambda s, substr: substr in s,
             "endsWith": lambda s, suffix: s.endswith(suffix),
             "indexOf": lambda s, substr: s.find(substr),
@@ -21,27 +27,32 @@ class VisitorInterp(CELVisitor):
             "replace": lambda s, substr, replacement: s.replace(substr, replacement),
             "split": lambda s, separator: s.split(separator),
             "startsWith": lambda s, prefix: s.startswith(prefix),
-            "matches": lambda s, regex: re.match(regex, s) is not None,
+
+            # List Functions
             "size": len,
-            "all": all,
-            "exists": any,
+
+            # Type Conversion Functions
             "int": int,
             "uint": lambda x: max(0, int(x)),
             "double": float,
             "string": str,
             "bool": bool,
-            "cond": lambda expr, true_val, false_val: true_val if expr else false_val,
-            "existsOne": lambda lst, predicate: sum(1 for item in lst if predicate(item)) == 1,
-            "timestamp": lambda: datetime.utcnow().isoformat() + "Z",
-            "getDate": lambda timestamp: timestamp.getUTCDate(),
-            "getDayOfMonth": lambda timestamp: timestamp.day,
-            "getDayOfWeek": lambda timestamp: timestamp.weekday(),
-            "getDayOfYear": lambda timestamp: timestamp.timetuple().tm_yday,
+
+            # Null Handling Functions
+            "exists": lambda x: x is not None,
+            "existsOne": lambda lst: sum(1 for item in lst if item is not None) == 1,
+
+            # Date/Time Functions
+            "duration": lambda seconds: f"{seconds}s",
+            "timestamp": lambda: datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + '000Z',
+            "time": lambda year, month, day, hour, minute, second, millisecond: datetime(year, month, day, hour, minute, second, millisecond * 1000, tzinfo=timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + '000Z',
+
+            "date": lambda year, month, day: datetime(year, month, day).strftime("%Y-%m-%d"),
             "getFullYear": lambda timestamp: timestamp.year,
+            "getMonth": lambda timestamp: timestamp.month - 1,  # 0-indexed
+            "getDate": lambda timestamp: timestamp.day,
             "getHours": lambda timestamp: timestamp.hour,
-            "getMilliseconds": lambda timestamp: timestamp.microsecond // 1000,
             "getMinutes": lambda timestamp: timestamp.minute,
-            "getMonth": lambda timestamp: timestamp.month,
             "getSeconds": lambda timestamp: timestamp.second,
         }
 
