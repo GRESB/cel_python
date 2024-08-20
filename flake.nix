@@ -23,6 +23,7 @@
               antlr4-python3-runtime
               cookiecutter
               pytest
+              debugpy
             ]);
             
             antlr4 = pkgs.antlr4;
