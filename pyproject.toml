@@ -14,7 +14,8 @@ maintainers = [
   {name = "yottanami", email = "yottanami@gnu.org"}
 ]
 classifiers = [
-
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
 ]
 license = {text = "GNU General Public License v3"}
 dependencies = [
@@ -32,7 +33,6 @@ dev = [
 [project.urls]
 
 bugs = "https://github.com/yottanami/cel_in_py/issues"
-changelog = "https://github.com/yottanami/cel_in_py/blob/master/changelog.md"
 homepage = "https://github.com/yottanami/cel_in_py"
 
 [tool.setuptools]
