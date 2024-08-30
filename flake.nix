@@ -24,6 +24,9 @@
               cookiecutter
               pytest
               debugpy
+              pip
+              build
+              twine
             ]);
             
             antlr4 = pkgs.antlr4;
