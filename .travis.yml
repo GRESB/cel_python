@@ -24,5 +24,5 @@ deploy:
     secure: PLEASE_REPLACE_ME
   on:
     tags: true
-    repo: yottanami/cel_in_py
+    repo: gresb/cel_python
     python: 3.8

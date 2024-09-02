@@ -1,27 +1,20 @@
-=========
-cel-in-py
-=========
+================
+gresb_cel_python
+================
 
 **This project is not ready for production yet.**
 
-.. image:: https://img.shields.io/pypi/v/cel_in_py.svg
-        :target: https://pypi.python.org/pypi/cel_in_py
+.. image:: https://img.shields.io/pypi/v/gresb_cel_python.svg
+         :target: https://pypi.python.org/pypi/gresb_cel_python
 
-.. image:: https://img.shields.io/travis/yottanami/cel_in_py.svg
-        :target: https://travis-ci.com/yottanami/cel_in_py
-
-.. image:: https://readthedocs.org/projects/cel-in-py/badge/?version=latest
-        :target: https://cel-in-py.readthedocs.io/en/latest/?version=latest
-        :alt: Documentation Status
+.. image:: https://img.shields.io/travis/gresb/gresb_cel_python
+         :target: https://travis-ci.com/gresb/gresb_cel_python
 
 
 
 Parser and evaluator for CEL in Python using ANTLR4
 
 This library provides parser and evaluator for Common Expression Language (CEL) expressions in Python projects. CEL is a language developed by Google that allows for safe and fast evaluation of expressions in a wide variety of applications, such as policy engines, rule engines, and more.
-
-
-* Documentation: https://cel-in-py.readthedocs.io.
 
 
 Features
@@ -37,12 +30,12 @@ Features
 Installation
 ------------
 
-You can install cel-in-py via pip:
+You can install gresb_cel_python via pip:
 
 
 .. code-block:: python
 
-   pip install cel_in_py
+   pip install gresb_cel_python
 
 
 
@@ -56,7 +49,7 @@ To use the CEL parser and evaluator, you can instantiate the Runtime class with 
 
 .. code-block:: python
 
-    from cel_in_py import Runtime
+    from gresb_cel_pyhon import Runtime
  
     # Define a CEL expression
     expression = "a + b * 10"

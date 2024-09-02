@@ -1,5 +1,5 @@
 {
-  description = "cel-in-py";
+  description = "cel-python";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";

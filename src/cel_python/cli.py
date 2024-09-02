@@ -1,5 +1,5 @@
-"""Console script for cel_in_py."""
-import cel_in_py
+"""Console script for cel_python."""
+import cel_python
 
 import typer
 from rich.console import Console
@@ -10,9 +10,9 @@ console = Console()
 
 @app.command()
 def main():
-    """Console script for cel_in_py."""
+    """Console script for cel_python."""
     console.print("Replace this message by putting your code into "
-               "cel_in_py.cli.main")
+               "cel_python.cli.main")
     console.print("See Typer documentation at https://typer.tiangolo.com/")
     
 

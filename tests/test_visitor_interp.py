@@ -1,5 +1,5 @@
 import pytest
-from cel_in_py import Runtime
+from cel_python import Runtime
 
 def test_simple_arithmetic_expression():
     runtime = Runtime("2 + 3")

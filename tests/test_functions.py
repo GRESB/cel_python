@@ -1,5 +1,5 @@
 import pytest
-from cel_in_py import Runtime
+from cel_python import Runtime
 from datetime import datetime
 
 @pytest.mark.parametrize("expression, context, expected", [
