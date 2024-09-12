@@ -4,13 +4,6 @@ gresb_cel_python
 
 **This project is not ready for production yet.**
 
-.. image:: https://img.shields.io/pypi/v/gresb_cel_python.svg
-         :target: https://pypi.python.org/pypi/gresb_cel_python
-
-.. image:: https://img.shields.io/travis/gresb/gresb_cel_python
-         :target: https://travis-ci.com/gresb/gresb_cel_python
-
-
 
 Parser and evaluator for CEL in Python using ANTLR4
 
