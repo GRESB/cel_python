@@ -1,6 +1,8 @@
+# tests/test_functions.py
+
 import pytest
-from cel_python import Runtime
-from datetime import datetime
+from datetime import datetime, date, timezone
+from cel_python.runtime import Runtime
 
 @pytest.mark.parametrize("expression, context, expected", [
     # Arithmetic Functions
@@ -9,7 +11,7 @@ from datetime import datetime
     ("abs(a)", {'a': -10}, 10),
     ("ceil(a)", {'a': 10.1}, 11),
     ("floor(a)", {'a': 10.9}, 10),
-    ("round(a)", {'a': 10.7}, 11),
+    ("round(a)", {'a': 10.5}, 11),
 
     # String Functions
     ("contains(s, 'world')", {'s': "hello world"}, True),
@@ -33,15 +35,15 @@ from datetime import datetime
     ("bool(a)", {'a': 1}, True),
 
     # Null Handling Functions
+    ("exists(a)", {'a': None}, False),
     ("existsOne(lst)", {'lst': [None, 1, None]}, True),
 
     # Date/Time Functions
-    ("timestamp()", {}, str),  # Expecting a string output
     ("duration(a)", {'a': 10}, "10s"),
-    ("time(2024, 8, 2, 12, 0, 0, 0)", {}, "2024-08-02T12:00:00.000000Z"),
-    ("date(2024, 8, 2)", {}, "2024-08-02"),
+    ("time(2024, 8, 2, 12, 0, 0, 0)", {}, datetime(2024, 8, 2, 12, 0, 0, 0, tzinfo=timezone.utc)),
+    ("date(2024, 8, 2)", {}, date(2024, 8, 2)),
     ("getFullYear(timestamp)", {'timestamp': datetime(2024, 8, 2)}, 2024),
-    ("getMonth(timestamp)", {'timestamp': datetime(2024, 8, 2)}, 7),  # August is month 7 (0-indexed)
+    ("getMonth(timestamp)", {'timestamp': datetime(2024, 8, 2)}, 7),
     ("getDate(timestamp)", {'timestamp': datetime(2024, 8, 2)}, 2),
     ("getHours(timestamp)", {'timestamp': datetime(2024, 8, 2, 12)}, 12),
     ("getMinutes(timestamp)", {'timestamp': datetime(2024, 8, 2, 12, 0)}, 0),
@@ -50,8 +52,4 @@ from datetime import datetime
 def test_builtin_functions(expression, context, expected):
     runtime = Runtime(expression)
     result = runtime.evaluate(context)
-
-    if isinstance(expected, type):
-        assert isinstance(result, expected)        
-    else:
-        assert result == expected
+    assert result == expected

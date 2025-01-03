@@ -1,8 +1,6 @@
-"""Top-level package for cel-in-py."""
+# """Top-level package for cel-in-py."""
 from .runtime import Runtime
-from .visitor_interp import VisitorInterp
-
-
+from .interpreter import Interpreter 
 from .parser.CELLexer import CELLexer
 from .parser.CELParser import CELParser
 from .parser.CELVisitor import CELVisitor
@@ -16,7 +14,7 @@ __all__ = [
     "CELVisitor",
     "CELParserListener"
 ]
-__author__ = """yottanami"""
-__email__ = 'yottanami@gnu.org'
-__version__ = '0.0.1'
+__author__ = """GRESB"""
+__email__ = 'cloud@gresb.com'
+__version__ = '0.0.2'
 

@@ -1,48 +1,113 @@
-import sys
-from antlr4 import *
+import antlr4
 from .parser.CELLexer import CELLexer
 from .parser.CELParser import CELParser
-from .parser.CELListener import CELListener
-from .visitor_interp import VisitorInterp
+from .context import Context
+from .type_checker import TypeChecker
+from .interpreter import Interpreter
+from antlr4.error.ErrorListener import ErrorListener
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+class ErrorCollector(ErrorListener):
+    def __init__(self):
+        super(ErrorCollector, self).__init__()
+        self.errors = []
+
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        self.errors.append({
+            'line': line,
+            'column': column,
+            'message': msg,
+            'offendingSymbol': offendingSymbol.text if offendingSymbol else None
+        })
+        logger.error(f"Syntax error at line {line}, column {column}: {msg}")
 
 class Runtime:
-    def __init__(self, cel_expression):
-        input_stream = InputStream(cel_expression)
-        lexer = CELLexer(input_stream)
-        token_stream = CommonTokenStream(lexer)
-        parser = CELParser(token_stream)
-
-        parser.removeErrorListeners()
-        error_listener = CELListener()
-        parser.addErrorListener(error_listener)
+    def __init__(self, cel_expression: str):
+        self.cel_expression = cel_expression
+        self.ast = None
+        self.errors = []
 
         try:
+            input_stream = antlr4.InputStream(cel_expression)
+            lexer = CELLexer(input_stream)
+            tokens = antlr4.CommonTokenStream(lexer)
+            parser = CELParser(tokens)
+            parser.buildParseTrees = True
+
+            # Remove default error listeners and add custom ErrorCollector
+            parser.removeErrorListeners()
+            error_collector = ErrorCollector()
+            parser.addErrorListener(error_collector)
+
+            # Parse the expression
             self.ast = parser.start()
+            logger.debug(f"AST: {self.ast.toStringTree(recog=parser)}")  # Log the AST
+
+            # If there are errors, collect them and invalidate the AST
+            if error_collector.errors:
+                self.errors = error_collector.errors
+                self.ast = None
+                logger.error(f"Parsing failed with errors: {self.errors}")
+
         except Exception as e:
-            print(f"Parsing failed: {e}")
+            # Catch any unexpected parsing exceptions
             self.ast = None
+            self.errors.append({
+                'line': 0,
+                'column': 0,
+                'message': str(e),
+                'offendingSymbol': None
+            })
+            logger.exception("Exception during parsing")
 
     @staticmethod
-    def can_parse(cel_expression):
-        try:
-            runtime = Runtime(cel_expression)
-            return runtime.ast is not None
-        except Exception:
-            return False
+    def can_parse(cel_expression: str) -> bool:
+        runtime = Runtime(cel_expression)
+        return runtime.ast is not None
 
     @staticmethod
-    def parse_string(cel_expression):
-        try:
-            runtime = Runtime(cel_expression)
-            if runtime.ast is not None:
+    def parse_string(cel_expression: str) -> dict:
+        runtime = Runtime(cel_expression)
+        if runtime.ast is not None:
+            return {"success": True}
+        else:
+            error_msg = runtime.errors[0]['message'] if runtime.errors else "Parsing failed with errors"
+            return {
+                "success": False,
+                "error": error_msg
+            }
+
+    @staticmethod
+    def type_check(expression: str, context_vars=None, types=None) -> dict:
+        runtime = Runtime(expression)
+        if runtime.ast is not None:
+            try:
+                context = Context(context_vars or {}, types or {})
+                type_checker = TypeChecker(context)
+                type_checker.visit(runtime.ast)
+                logger.debug("Type checking succeeded")
                 return {"success": True}
-            else:
-                return {"success": False, "error": "Parsing failed without an exception"}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+            except Exception as e:
+                logger.error(f"Type checking failed: {str(e)}")
+                return {"success": False, "error": str(e)}
+        else:
+            error_message = runtime.errors[0]['message'] if runtime.errors else "Parsing failed with errors"
+            logger.error(f"Type checking failed: {error_message}")
+            return {"success": False, "error": error_message}
 
-    def evaluate(self, context):
+    def evaluate(self, context_vars=None, types=None):
         if not self.ast:
-            raise Exception("AST is not available. Parsing might have failed.")
-        visitor = VisitorInterp(context)
-        return visitor.visit(self.ast)
+            raise ValueError("AST is not available. Parsing might have failed.")
+        context = Context(context_vars or {}, types or {})
+        type_check_result = Runtime.type_check(self.cel_expression, context_vars, types)
+        if type_check_result["success"]:
+            interpreter = Interpreter(context)
+            result = interpreter.visit(self.ast)
+            logger.debug(f"Evaluation result: {result}")
+            return result
+        else:
+            raise TypeError(type_check_result["error"])
