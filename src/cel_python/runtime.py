@@ -4,6 +4,7 @@ from .parser.CELParser import CELParser
 from .context import Context
 from .type_checker import TypeChecker
 from .interpreter import Interpreter
+from .error_collector import ErrorCollector
 from antlr4.error.ErrorListener import ErrorListener
 import logging
 
@@ -11,19 +12,6 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-class ErrorCollector(ErrorListener):
-    def __init__(self):
-        super(ErrorCollector, self).__init__()
-        self.errors = []
-
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        self.errors.append({
-            'line': line,
-            'column': column,
-            'message': msg,
-            'offendingSymbol': offendingSymbol.text if offendingSymbol else None
-        })
-        logger.error(f"Syntax error at line {line}, column {column}: {msg}")
 
 class Runtime:
     def __init__(self, cel_expression: str):
